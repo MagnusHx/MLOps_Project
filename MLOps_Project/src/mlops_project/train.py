@@ -1,8 +1,10 @@
-import matplotlib.pyplot as plt
 import torch
 import typer
-from data import corrupt_mnist
-from model import MyAwesomeModel
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from pathlib import Path
+from mlops_project.data import corrupt_mnist
+from mlops_project.model import MyAwesomeModel
 
 DEVICE = torch.device(
     "cuda"
@@ -13,6 +15,9 @@ DEVICE = torch.device(
 
 def train(lr: float = 1e-3, batch_size: int = 32, epochs: int = 10) -> None:
     """Train a model on MNIST."""
+    Path("models").mkdir(parents=True, exist_ok=True)
+    Path("reports/figures").mkdir(parents=True, exist_ok=True)
+    print(f"Torch is available: {torch.cuda.is_available()}")
     print("Training day and night")
     print(f"{lr=}, {batch_size=}, {epochs=}")
 
@@ -26,8 +31,9 @@ def train(lr: float = 1e-3, batch_size: int = 32, epochs: int = 10) -> None:
 
     statistics = {"train_loss": [], "train_accuracy": []}
     for epoch in range(epochs):
+        print(f"Epoch {epoch + 1}/{epochs}")
         model.train()
-        for i, (img, target) in enumerate(train_dataloader):
+        for img, target in tqdm(train_dataloader, desc="Training"):
             img, target = img.to(DEVICE), target.to(DEVICE)
             optimizer.zero_grad()
             y_pred = model(img)
@@ -38,9 +44,6 @@ def train(lr: float = 1e-3, batch_size: int = 32, epochs: int = 10) -> None:
 
             accuracy = (y_pred.argmax(dim=1) == target).float().mean().item()
             statistics["train_accuracy"].append(accuracy)
-
-            if i % 100 == 0:
-                print(f"Epoch {epoch}, iter {i}, loss: {loss.item()}")
 
     print("Training complete")
     torch.save(model.state_dict(), "models/model.pth")

@@ -1,5 +1,6 @@
 from pathlib import Path
 from torchvision import datasets
+from typing import Tuple
 import torch
 import typer
 
@@ -50,7 +51,7 @@ def preprocess_data(raw_dir: str, processed_dir: str) -> None:
     print("✔ Fashion-MNIST downloaded and preprocessed successfully")
 
 
-def corrupt_mnist() -> tuple[torch.utils.data.Dataset, torch.utils.data.Dataset]:
+def corrupt_mnist() -> Tuple[torch.utils.data.Dataset, torch.utils.data.Dataset]:
     """Return train and test datasets for corrupt MNIST."""
     train_images = torch.load("data/processed/train_images.pt")
     train_target = torch.load("data/processed/train_target.pt")
